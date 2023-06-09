@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,7 +35,7 @@ func NewKafkaConsumer() (*KafkaConsumer, error) {
 
 	return &KafkaConsumer{
 		consumer: c,
-		Metrics:  NewMetrics(),
+		Metrics:  NewGlobalMetrics(),
 	}, nil
 }
 
@@ -72,6 +73,40 @@ func (c *KafkaConsumer) ConsumeData() error {
 		c.Metrics.errCounterItem.Add(float64(errs))
 	}
 
+	c.StorageUnitMetricHandle(data)
+	c.SenderMetricHandle(data)
+
 	c.Metrics.kafkaMessages.Inc()
 	return nil
+}
+
+func (c *KafkaConsumer) StorageUnitMetricHandle(data typ.ItemData) {
+	ptr := c.Metrics.StorageUnits[MetricStorageUnitId(data)]
+	if ptr != nil {
+		(*ptr).Inc()
+	} else {
+		counter := prometheus.NewCounter(
+			prometheus.CounterOpts{
+				Namespace: "storage_unitss",
+				Name:      data.StorageUnit.ID,
+			})
+
+		prometheus.MustRegister(counter)
+		c.Metrics.StorageUnits[MetricStorageUnitId(data)] = &counter
+	}
+}
+
+func (c *KafkaConsumer) SenderMetricHandle(data typ.ItemData) {
+	ptr := c.Metrics.Sender[MetricSenderId(data)]
+	if ptr != nil {
+		(*ptr).Inc()
+	} else {
+		counter := prometheus.NewCounter(
+			prometheus.CounterOpts{
+				Namespace: fmt.Sprintf("sender_from_%s", data.StorageUnit.ID),
+				Name:      fmt.Sprintf("senderId:%d", data.Item.Sender.ID),
+			})
+		prometheus.MustRegister(counter)
+		c.Metrics.Sender[MetricSenderId(data)] = &counter
+	}
 }
