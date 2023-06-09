@@ -17,13 +17,13 @@ func NewLogMiddleware(next DataProducer) *LogMiddleware {
 	}
 }
 
-func (l *LogMiddleware) ProduceData(data typ.Item) error {
+func (l *LogMiddleware) ProduceData(data typ.ItemData) error {
 	defer func(start time.Time) {
 		logrus.WithFields(logrus.Fields{
-			"ID":        data.ID,
-			"Amount":    data.Amount,
-			"Sender ID": data.Sender.ID,
-			"took":      time.Since(start),
+			"Item ID":        data.Item.ID,
+			"StorageUnit ID": data.StorageUnit.ID,
+			"Sender ID":      data.Item.Sender.ID,
+			"took":           time.Since(start),
 		}).Info("Producing to Kafka")
 	}(time.Now())
 	return l.next.ProduceData(data)

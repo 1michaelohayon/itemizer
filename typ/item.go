@@ -16,6 +16,10 @@ type Sender struct {
 }
 
 type StorageUnit struct {
-	ID           int64
-	LocalStorage []Item
+	ID string
+}
+
+type ItemData struct {
+	Item        Item
+	StorageUnit StorageUnit
 }

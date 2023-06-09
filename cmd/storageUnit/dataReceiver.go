@@ -1,6 +1,7 @@
 package main
 
 import (
+	"1michaelohayon/itemizer/config"
 	"1michaelohayon/itemizer/typ"
 	"fmt"
 	"log"
@@ -16,11 +17,11 @@ type DataReceiver struct {
 
 func NewDataReceiver() (*DataReceiver, error) {
 	var (
-		p           DataProducer
-		err         error
-		kafakaTopic = "Itemizer"
+		p   DataProducer
+		err error
 	)
-	p, err = NewKafkaProducer(kafakaTopic)
+
+	p, err = NewKafkaProducer(config.KafkaTopic, config.KafkaHost)
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +37,8 @@ func (dr *DataReceiver) wsReceiveLoop() {
 	readErrors := 0
 	fmt.Println("New Scanner connected.")
 	for {
-		var data typ.Item
-		if err := dr.wsCon.ReadJSON(&data); err != nil {
+		var item typ.Item
+		if err := dr.wsCon.ReadJSON(&item); err != nil {
 			log.Println("read error:", err)
 			readErrors++
 			if readErrors > 5 {
@@ -46,8 +47,12 @@ func (dr *DataReceiver) wsReceiveLoop() {
 			}
 			continue
 		}
-		fmt.Printf("<-- Received item:%d from sender:%d\n", data.ID, data.Sender.ID)
+		fmt.Printf("<-- Received item:%d from sender:%d\n", item.ID, item.Sender.ID)
 
+		data := typ.ItemData{
+			StorageUnit: this,
+			Item:        item,
+		}
 		if err := dr.kProd.ProduceData(data); err != nil {
 			fmt.Println("kafka ProduceData error:", err)
 		}

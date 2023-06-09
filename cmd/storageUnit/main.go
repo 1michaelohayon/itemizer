@@ -1,12 +1,27 @@
 package main
 
 import (
+	"1michaelohayon/itemizer/typ"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/websocket"
 )
+
+var this = typ.StorageUnit{
+	ID: "placeholder",
+}
+
+func init() {
+	id := os.Getenv("STORAGE_UNIT_ID")
+	if len(id) > 0 {
+		this.ID = id
+	} else {
+		fmt.Println("ID was not given")
+	}
+}
 
 func main() {
 	fmt.Println("Awaiting Connections. . .")

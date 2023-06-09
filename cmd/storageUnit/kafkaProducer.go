@@ -9,7 +9,7 @@ import (
 )
 
 type DataProducer interface {
-	ProduceData(typ.Item) error
+	ProduceData(typ.ItemData) error
 }
 
 type KafkaProducer struct {
@@ -17,8 +17,8 @@ type KafkaProducer struct {
 	topic    string
 }
 
-func NewKafkaProducer(topic string) (DataProducer, error) {
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": "localhost"})
+func NewKafkaProducer(topic, host string) (DataProducer, error) {
+	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": host})
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func NewKafkaProducer(topic string) (DataProducer, error) {
 	}, nil
 }
 
-func (p *KafkaProducer) ProduceData(data typ.Item) error {
+func (p *KafkaProducer) ProduceData(data typ.ItemData) error {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err
