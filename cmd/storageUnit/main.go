@@ -19,6 +19,7 @@ func init() {
 	if len(id) > 0 {
 		this.ID = id
 	} else {
+		//panic/logfatal in production
 		fmt.Println("ID was not given")
 	}
 }

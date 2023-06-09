@@ -1,6 +1,7 @@
 package main
 
 import (
+	"1michaelohayon/itemizer/config"
 	"1michaelohayon/itemizer/typ"
 	"encoding/json"
 	"fmt"
@@ -13,11 +14,12 @@ import (
 type KafkaConsumer struct {
 	consumer  *kafka.Consumer
 	isRunning bool
+	Metrics   *Metrics
 }
 
-func NewKafkaConsumer(topic, host string) (*KafkaConsumer, error) {
+func NewKafkaConsumer() (*KafkaConsumer, error) {
 	c, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers": host, //docker network
+		"bootstrap.servers": config.KafkaHost, //docker network
 		"group.id":          "myGroup",
 		"auto.offset.reset": "earliest",
 	})
@@ -26,12 +28,13 @@ func NewKafkaConsumer(topic, host string) (*KafkaConsumer, error) {
 		panic(err)
 	}
 
-	if err = c.SubscribeTopics([]string{topic}, nil); err != nil {
+	if err = c.SubscribeTopics([]string{config.KafkaTopic}, nil); err != nil {
 		return nil, err
 	}
 
 	return &KafkaConsumer{
 		consumer: c,
+		Metrics:  NewMetrics(),
 	}, nil
 }
 
@@ -46,23 +49,29 @@ func (c *KafkaConsumer) Start() {
 }
 
 func (c *KafkaConsumer) readMessageLoop() {
-
 	for c.isRunning {
-		msg, err := c.consumer.ReadMessage(-1)
-		if err != nil {
-			//TODO: inc in promehtheus
-			logrus.Errorf("kafka consumer error: %s\n", err)
-			log.Fatal(err)
-		}
-		var data typ.ItemData
-		if err := json.Unmarshal(msg.Value, &data); err != nil {
-			//TODO: inc in promehtheus
-			logrus.Errorf("JSON serialization error: %s\n")
-			continue
-		}
-
-		fmt.Println("Consumed", data)
-		//.... TODO
-
+		c.ConsumeData()
 	}
+}
+
+func (c *KafkaConsumer) ConsumeData() error {
+	msg, err := c.consumer.ReadMessage(-1)
+	if err != nil {
+		c.Metrics.errCounterKafka.Inc()
+		logrus.Errorf("kafka consumer error: %s\n", err)
+		log.Fatal(err)
+	}
+	var data typ.ItemData
+	if err := json.Unmarshal(msg.Value, &data); err != nil {
+		c.Metrics.errCounterKafka.Inc()
+		logrus.Errorf("JSON serialization error: %s\n")
+	}
+	fmt.Println("Consumed", data)
+	errs := len(data.Item.Errors)
+	if errs > 0 {
+		c.Metrics.errCounterItem.Add(float64(errs))
+	}
+
+	c.Metrics.kafkaMessages.Inc()
+	return nil
 }

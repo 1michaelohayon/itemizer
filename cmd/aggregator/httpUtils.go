@@ -21,6 +21,8 @@ func (e ApiError) Error() string {
 	return e.Err.Error()
 }
 
+type HTTPfunc func(http.ResponseWriter, *http.Request) error
+
 func NewHTTPHandler(fn HTTPfunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := fn(w, r); err != nil {

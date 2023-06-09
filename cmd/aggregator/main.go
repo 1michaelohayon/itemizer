@@ -1,7 +1,6 @@
 package main
 
 import (
-	"1michaelohayon/itemizer/config"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,8 +8,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
-
-const kafkaTopic = "Itemizer"
 
 var (
 	httpPort = ":4000"
@@ -24,7 +21,7 @@ func init() {
 }
 
 func main() {
-	kafkaConsumer, err := NewKafkaConsumer(config.KafkaTopic, config.KafkaHost)
+	kafkaConsumer, err := NewKafkaConsumer()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,4 +35,9 @@ func NewHttpListener(listenAddr string) error {
 	fmt.Println("Http port running on", listenAddr)
 	http.Handle("/metrics", promhttp.Handler())
 	return http.ListenAndServe(listenAddr, nil)
+
+}
+
+type Aggregator interface {
+	Consumer() (*KafkaConsumer, error)
 }

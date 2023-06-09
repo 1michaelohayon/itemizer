@@ -1,25 +1,35 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-type HTTPfunc func(http.ResponseWriter, *http.Request) error
-
-type HTTPMetricHandler struct {
-	errCounter prometheus.Counter
+type Metrics struct {
+	errCounterItem  prometheus.Counter
+	errCounterKafka prometheus.Counter
+	kafkaMessages   prometheus.Counter
 }
 
-func newHTTPMetricsHandler(reqName string) *HTTPMetricHandler {
-	errCounter := prometheus.NewCounter(prometheus.CounterOpts{
-		Namespace: fmt.Sprintf("http_%s_%s", reqName, "err_counter"),
-		Name:      "item",
-	})
-
-	return &HTTPMetricHandler{
-		errCounter: errCounter,
+func NewMetrics() *Metrics {
+	m := &Metrics{
+		errCounterItem: prometheus.NewCounter(
+			prometheus.CounterOpts{
+				Namespace: "item_error_counter",
+				Name:      "item",
+			}),
+		errCounterKafka: prometheus.NewCounter(
+			prometheus.CounterOpts{
+				Namespace: "kafka_error_counter",
+				Name:      "kafka",
+			}),
+		kafkaMessages: prometheus.NewCounter(
+			prometheus.CounterOpts{
+				Namespace: "kafka_messages_counter",
+				Name:      "kafka",
+			}),
 	}
+	prometheus.MustRegister(m.kafkaMessages)
+	prometheus.MustRegister(m.errCounterItem)
+	prometheus.MustRegister(m.errCounterKafka)
+	return m
 }
