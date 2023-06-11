@@ -14,7 +14,6 @@ import (
 
 var (
 	wsEndPoint = "ws://127.0.0.1:30000/ws"
-	generateId = idGenerator()
 	senderId   = rand.Intn(math.MaxInt - 1)
 )
 
@@ -44,22 +43,14 @@ func main() {
 }
 
 func NewRndItem() typ.Item {
-	id := generateId()
+	id := rand.Intn(8) + 1
 	return typ.Item{
-		ID:     id,
+		ID:     int64(id),
 		Name:   fmt.Sprintf("Random Item %d", id),
 		Amount: 1,
 		Sender: typ.Sender{
 			ID:   int64(senderId),
 			Time: time.Now(),
 		},
-	}
-}
-
-func idGenerator() func() int64 {
-	var id int64 = 0
-	return func() int64 {
-		id++
-		return id
 	}
 }

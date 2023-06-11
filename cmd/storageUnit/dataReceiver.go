@@ -1,6 +1,7 @@
 package main
 
 import (
+	"1michaelohayon/itemizer/cmd/storageUnit/db"
 	"1michaelohayon/itemizer/config"
 	"1michaelohayon/itemizer/typ"
 	"fmt"
@@ -48,6 +49,10 @@ func (dr *DataReceiver) wsReceiveLoop() {
 			continue
 		}
 		fmt.Printf("<-- Received item:%d from sender:%d\n", item.ID, item.Sender.ID)
+		err := db.UpdateOnesAmount(item)
+		if err != nil {
+			item.Errors = append(item.Errors, err.Error())
+		}
 
 		data := typ.ItemData{
 			StorageUnit: this,
