@@ -10,18 +10,25 @@ services:
   broker:
     image: confluentinc/cp-kafka:7.3.2
     container_name: broker
-    ports:
-      - "9092:9092"
+    #    ports:
+    #      - "9092:9092"
     depends_on:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,PLAINTEXT_INTERNAL://broker:29092 #<--
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: nc -z localhost 9092 || exit -1
+      start_period: 15s
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
 
   prometheus:
     image: prom/prometheus
@@ -41,7 +48,49 @@ services:
     image: postgres:15.3-bullseye
     environment:
       - POSTGRES_PASSWORD=sisma
-
     ports:
       - 6432:5432
 
+
+  storageunit:
+    container_name: storageunit
+    build:
+      context: ./
+      dockerfile: ./cmd/storageUnit/Dockerfile
+    ports:
+      - 30000:30000
+    environment:
+      STORAGE_UNIT_ID: storageUnit1
+    depends_on:
+      broker: 
+        condition: service_healthy
+
+  
+  aggregator:
+    container_name: aggregator
+    build:
+      context: ./
+      dockerfile: ./cmd/aggregator/Dockerfile
+    environment:
+      HTTP_ENDPOINT: http://api:5000
+    depends_on:
+      broker: 
+        condition: service_healthy
+
+
+  api:
+    container_name: itemizerApi
+    build: 
+      context: ./
+      dockerfile: ./cmd/api/Dockerfile
+    environment:
+      PSQL_PASS: ${PSQL_PASS}
+      PSQL_HOST: psql
+      PSQL_PORT: 5432
+        
+  
+  
+        
+        
+
+  

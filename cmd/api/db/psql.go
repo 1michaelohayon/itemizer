@@ -10,20 +10,29 @@ import (
 )
 
 const (
-	dbPort = "6432"
 	user   = "postgres"
-	host   = "localhost"
 	dbName = "postgres"
 )
 
 var (
 	psqlDb *sql.DB
 	pass   string
+	host   = "localhost"
+	dbPort = "6432"
 )
 
 func init() {
 	if pass = os.Getenv("PSQL_PASS"); len(pass) == 0 {
 		log.Fatal("missing psql password. env: PSQL_PASS")
+	}
+
+	hostEnv := os.Getenv("PSQL_HOST")
+	portEnv := os.Getenv("PSQL_PORT")
+	if len(hostEnv) > 0 {
+		host = hostEnv
+	}
+	if len(portEnv) > 0 {
+		dbPort = portEnv
 	}
 
 }

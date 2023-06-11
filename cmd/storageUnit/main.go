@@ -33,7 +33,7 @@ func init() {
 func main() {
 	fmt.Println("Awaiting Connections. . .")
 
-	go http.HandleFunc("/ws", handleWS) //start connection on a new gorotuine
+	go http.HandleFunc("/ws", handleWS)
 	http.ListenAndServe(":30000", nil)
 }
 

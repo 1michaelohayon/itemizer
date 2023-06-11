@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -26,6 +27,7 @@ func init() {
 }
 
 func main() {
+	time.Sleep(15 * time.Second)
 	kafkaConsumer, err := NewKafkaConsumer()
 	if err != nil {
 		log.Fatal(err)
