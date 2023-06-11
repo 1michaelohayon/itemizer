@@ -35,3 +35,13 @@ services:
     ports:
      - "3000:3000"
 
+
+  psql:
+    container_name: psql
+    image: postgres:15.3-bullseye
+    environment:
+      - POSTGRES_PASSWORD=sisma
+
+    ports:
+      - 6432:5432
+

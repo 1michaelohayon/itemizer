@@ -77,6 +77,9 @@ func (c *KafkaConsumer) ConsumeData() error {
 	c.SenderMetricHandle(data)
 
 	c.Metrics.kafkaMessages.Inc()
+
+	informAPi(data)
+
 	return nil
 }
 

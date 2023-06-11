@@ -23,6 +23,7 @@ require (
 )
 
 require (
+	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/prometheus/client_golang v1.15.1
 	github.com/stretchr/testify v1.8.4

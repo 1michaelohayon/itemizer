@@ -10,13 +10,18 @@ import (
 )
 
 var (
-	httpPort = ":4000"
+	httpPort    = ":4000"
+	ApiEndPoint = "http://localhost:5000"
 )
 
 func init() {
 	hp := os.Getenv("AGG_PORT")
 	if len(hp) > 0 {
 		httpPort = hp
+	}
+	ep := os.Getenv("HTTP_ENDPOINT")
+	if len(ep) > 0 {
+		ApiEndPoint = ep
 	}
 }
 

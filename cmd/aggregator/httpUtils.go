@@ -1,34 +1,28 @@
 package main
 
 import (
+	"1michaelohayon/itemizer/typ"
+	"bytes"
 	"encoding/json"
 	"net/http"
+
+	"github.com/sirupsen/logrus"
 )
 
-func writeJSON(w http.ResponseWriter, status int, v any) error {
-	w.WriteHeader(status)
-	w.Header().Add("Content-Type", "application/json")
-	return json.NewEncoder(w).Encode(v)
-}
+var client = &http.Client{}
 
-type ApiError struct {
-	Code int
-	Err  error
-}
-
-// tostring
-func (e ApiError) Error() string {
-	return e.Err.Error()
-}
-
-type HTTPfunc func(http.ResponseWriter, *http.Request) error
-
-func NewHTTPHandler(fn HTTPfunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := fn(w, r); err != nil {
-			if apiErr, ok := err.(ApiError); ok {
-				writeJSON(w, apiErr.Code, map[string]string{"error": apiErr.Error()})
-			}
-		}
+func informAPi(itemD typ.ItemData) {
+	json, err := json.Marshal(itemD)
+	if err != nil {
+		logrus.Error("marshal error:", err)
+	}
+	req, err := http.NewRequest("POST", ApiEndPoint, bytes.NewBuffer(json))
+	if err != nil {
+		logrus.Error("new request error:", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	_, err = client.Do(req)
+	if err != nil {
+		logrus.Error("clent req send error:", err)
 	}
 }

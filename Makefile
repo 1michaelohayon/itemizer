@@ -11,6 +11,10 @@ aggregator:
 	@go build -o bin/aggregator ./cmd/aggregator/
 	@./bin/aggregator
 
+api:
+	@go build -o bin/api ./cmd/api/
+	@./bin/api
+
 test:
 	@go test -count=1 -v ./...
 
