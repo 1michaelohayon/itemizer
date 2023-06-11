@@ -1,6 +1,7 @@
 package main
 
 import (
+	"1michaelohayon/itemizer/cmd/storageUnit/db"
 	"1michaelohayon/itemizer/typ"
 	"fmt"
 	"log"
@@ -22,6 +23,11 @@ func init() {
 		//panic/logfatal in production
 		fmt.Println("ID was not given")
 	}
+
+	if err := db.Connect("./data.db"); err != nil {
+		log.Fatal(err)
+	}
+	db.CreateItemsTable()
 }
 
 func main() {

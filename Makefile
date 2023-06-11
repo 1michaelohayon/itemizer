@@ -10,4 +10,7 @@ storageUnit:
 aggregator:
 	@go build -o bin/aggregator ./cmd/aggregator/
 	@./bin/aggregator
-	
+
+test:
+	@go test -count=1 -v ./...
+

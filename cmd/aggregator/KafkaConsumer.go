@@ -65,7 +65,7 @@ func (c *KafkaConsumer) ConsumeData() error {
 	var data typ.ItemData
 	if err := json.Unmarshal(msg.Value, &data); err != nil {
 		c.Metrics.errCounterKafka.Inc()
-		logrus.Errorf("JSON serialization error: %s\n")
+		logrus.Errorf("JSON serialization error: %s\n", err)
 	}
 	fmt.Println("Consumed", data)
 	errs := len(data.Item.Errors)
